@@ -1,0 +1,93 @@
+# Smart Tennis Lab — Backend
+
+API del servicio de análisis de partidos de tenis de Smart Tennis Lab. El profe registra
+estadísticas tocando botones mientras mira el partido en vivo, y después obtiene un reporte con
+totales, porcentajes y desglose por set.
+
+La app móvil que consume esta API vive en [`smart-tennis-lab-mobile`](../mobile).
+
+## Stack
+
+| | |
+|---|---|
+| Lenguaje | Java 21 (LTS) |
+| Framework | Spring Boot 3.5 |
+| Persistencia | PostgreSQL 16 + Spring Data JPA + Flyway |
+| Seguridad | Spring Security 6 + JWT (access + refresh) |
+| Documentación | springdoc-openapi (Swagger UI) |
+| Tests | JUnit 5, Mockito, Testcontainers |
+| Build | Gradle 9 (toolchain Java 21) |
+
+## Decisiones de diseño
+
+**Un tap = una fila.** `match_events` es un log append-only: cada botón que toca el profe inserta
+una fila y deshacer marca `deleted_at` en vez de borrar. Eso da tres cosas de una: undo trivial,
+sincronización idempotente y auditoría de lo que pasó en la cancha. No es Event Sourcing — no hay
+event store ni reconstrucción de agregados, solo el modelo de datos que el dominio pide.
+
+**IDs generados por el cliente.** Los partidos, sets y eventos usan UUID creado en el dispositivo.
+En una cancha la señal es mala, así que el celular tiene que poder crear todo offline. El id del
+cliente funciona además como clave de idempotencia: reenviar un lote no duplica nada.
+
+**Los totales se calculan, no se guardan.** Un partido son cientos de eventos: un `GROUP BY` sobre
+el índice parcial alcanza y sobra. Si algún día no alcanzara, se agrega una tabla de contadores
+denormalizada — pero recién cuando haga falta.
+
+**El catálogo de KPIs vive en código** (`com.smarttennislab.catalog.Kpi`), pero la app no lo
+replica: lo pide por `GET /api/v1/kpis` y arma la pantalla con lo que recibe. Así, agregar los KPIs
+de dobles es agregar constantes al enum y redeployar el backend, sin publicar una versión nueva de
+la app en la store.
+
+**Aislamiento entre profes.** Todas las consultas filtran por el `coach_id` que sale del JWT. Un
+profe no puede ver ni tocar los datos de otro, y hay tests que lo verifican.
+
+## KPIs
+
+23 KPIs sobre la lista base de singles: **19 contadores** que el profe toca (saque, devolución,
+definición del punto, largo del rally, resultado) y **4 calculados** (puntos ganados, puntos
+jugados, duración y % de puntos ganados).
+
+Quedan fuera de esta versión `% de juegos ganados` y `% de break points convertidos y salvados`:
+no son calculables sin eventos base que la lista todavía no define.
+
+## Cómo levantarlo
+
+Requiere **Docker** (para Postgres y para los tests de integración). El JDK 21 lo descarga Gradle
+solo, no hace falta instalarlo.
+
+```bash
+docker compose up -d          # Postgres en localhost:5432
+./gradlew bootRun             # API en http://localhost:8080
+```
+
+Swagger UI queda en http://localhost:8080/swagger-ui.html
+
+```bash
+./gradlew test                # unitarios + integración (Testcontainers)
+./gradlew build               # lo anterior + el jar
+```
+
+## Configuración
+
+Todo tiene default para desarrollo local; en producción se pasa por variable de entorno.
+
+| Variable | Default | |
+|---|---|---|
+| `DB_URL` | `jdbc:postgresql://localhost:5432/smarttennislab` | |
+| `DB_USER` / `DB_PASSWORD` | `stl` / `stl` | |
+| `JWT_SECRET` | valor de desarrollo | **obligatorio en producción** |
+| `CORS_ALLOWED_ORIGINS` | orígenes de Expo en local | |
+| `PORT` | `8080` | |
+
+## Estructura
+
+```
+com.smarttennislab
+├── config/     configuración de seguridad, CORS y OpenAPI
+├── shared/     manejo de errores y tipos compartidos
+├── auth/       registro, login, refresh, JWT
+├── catalog/    enum de KPIs y su endpoint
+├── player/     alumnos del profe
+├── match/      partidos, sets y sincronización de eventos
+└── report/     cálculo de KPIs derivados y export PDF/CSV
+```

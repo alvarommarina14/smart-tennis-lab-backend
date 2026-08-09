@@ -1,0 +1,25 @@
+# ---------- Gradle / Java ----------
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+out/
+bin/
+*.class
+
+# ---------- Env / secrets ----------
+.env
+.env.local
+
+# ---------- IDE ----------
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+.settings/
+.classpath
+.project
+
+# ---------- OS ----------
+.DS_Store
+Thumbs.db

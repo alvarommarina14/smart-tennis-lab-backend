@@ -1,0 +1,6 @@
+plugins {
+    // Permite que Gradle descargue solo el JDK 21 si no está instalado en la máquina.
+    id 'org.gradle.toolchains.foojay-resolver-convention' version '1.0.0'
+}
+
+rootProject.name = 'smart-tennis-lab-backend'
