@@ -52,20 +52,41 @@ no son calculables sin eventos base que la lista todavía no define.
 
 ## Cómo levantarlo
 
-Requiere **Docker** (para Postgres y para los tests de integración). El JDK 21 lo descarga Gradle
-solo, no hace falta instalarlo.
+El JDK 21 lo descarga Gradle solo, no hace falta instalarlo.
+
+Para la base hay dos caminos; con cualquiera de los dos la API queda igual.
+
+**Con Docker:**
 
 ```bash
-docker compose up -d          # Postgres en localhost:5432
+docker compose up -d          # Postgres 16 en localhost:5432
+```
+
+**Con un PostgreSQL ya instalado en la máquina:**
+
+```bash
+psql -U postgres -f scripts/create-local-db.sql   # crea la base y el usuario stl
+```
+
+Después, en ambos casos:
+
+```bash
 ./gradlew bootRun             # API en http://localhost:8080
 ```
 
 Swagger UI queda en http://localhost:8080/swagger-ui.html
 
+## Tests
+
 ```bash
-./gradlew test                # unitarios + integración (Testcontainers)
+./gradlew test                # unitarios + integración
 ./gradlew build               # lo anterior + el jar
 ```
+
+Los tests de integración levantan su propio Postgres con **Testcontainers**, así que **esos**
+sí necesitan Docker. Es a propósito: un test que depende de la base de tu máquina deja de ser
+reproducible y no corre igual en CI. Sin Docker instalado, los unitarios corren igual y los de
+integración corren en GitHub Actions, cuyos runners ya traen Docker.
 
 ## Configuración
 
