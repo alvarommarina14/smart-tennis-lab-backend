@@ -102,9 +102,13 @@ Todo tiene default para desarrollo local; en producción se pasa por variable de
 
 ## Estructura
 
+Un paquete por feature y, dentro de cada uno, un subpaquete por capa
+(`controller` → `service` → `repository` → `model`, más `dto`). Las dependencias van siempre en esa
+dirección: la capa web no conoce JPA.
+
 ```
 com.smarttennislab
-├── config/     configuración de seguridad, CORS y OpenAPI
+├── config/     seguridad, CORS, filtro JWT
 ├── shared/     manejo de errores y tipos compartidos
 ├── auth/       registro, login, refresh, JWT
 ├── catalog/    enum de KPIs y su endpoint
@@ -112,3 +116,7 @@ com.smarttennislab
 ├── match/      partidos, sets y sincronización de eventos
 └── report/     cálculo de KPIs derivados y export PDF/CSV
 ```
+
+El cálculo de los KPIs vive en `report.service.KpiCalculator`, que es una clase pura: recibe cuántas
+veces se tocó cada botón y cuánto duró el partido, y devuelve los 23 valores. No sabe de JPA ni de
+HTTP, así que se testea sin levantar nada.
