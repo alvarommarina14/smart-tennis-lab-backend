@@ -42,6 +42,10 @@ public class MatchEvent {
     @Column(name = "client_seq", nullable = false)
     private long clientSeq;
 
+    // Milisegundos desde la marca de inicio del partido dentro del video. NULL si se cargó en vivo.
+    @Column(name = "video_offset_ms")
+    private Long videoOffsetMs;
+
     public MatchEvent(
             UUID id, UUID matchId, UUID setId, String kpiCode, Instant occurredAt, long clientSeq) {
         this.id = id;
