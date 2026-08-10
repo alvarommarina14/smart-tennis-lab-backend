@@ -4,13 +4,17 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.smarttennislab.auth.dto.AuthResponse;
+import com.smarttennislab.auth.dto.ChangePasswordRequest;
+import com.smarttennislab.auth.dto.CoachResponse;
 import com.smarttennislab.auth.dto.LoginRequest;
 import com.smarttennislab.auth.dto.RegisterRequest;
+import com.smarttennislab.auth.dto.UpdateProfileRequest;
 import com.smarttennislab.auth.model.RefreshToken;
 import com.smarttennislab.auth.model.User;
 import com.smarttennislab.auth.repository.RefreshTokenRepository;
@@ -207,4 +211,72 @@ class AuthServiceTest {
         service.logout("inventado");
     }
 
+    @Test
+    void editarElPerfilCambiaNombreYEmailNormalizado() {
+        User user = usuarioExistente("profe@test.com", "contraseña123");
+        when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
+        when(userRepository.existsByEmailIgnoreCase(anyString())).thenReturn(false);
+
+        CoachResponse response = service.updateProfile(
+                user.getId(), new UpdateProfileRequest("  Nuevo@TEST.com  ", "  Alvi Marina  "));
+
+        assertThat(response.email()).isEqualTo("nuevo@test.com");
+        assertThat(response.fullName()).isEqualTo("Alvi Marina");
+    }
+
+    @Test
+    void editarElPerfilDejandoElMismoEmailNoChocaConsigoMismo() {
+        User user = usuarioExistente("profe@test.com", "contraseña123");
+        when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
+        when(userRepository.existsByEmailIgnoreCase("profe@test.com")).thenReturn(true);
+
+        CoachResponse response = service.updateProfile(
+                user.getId(), new UpdateProfileRequest("profe@test.com", "Otro Nombre"));
+
+        assertThat(response.fullName()).isEqualTo("Otro Nombre");
+    }
+
+    @Test
+    void noSePuedeTomarElEmailDeOtroProfe() {
+        User user = usuarioExistente("profe@test.com", "contraseña123");
+        when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
+        when(userRepository.existsByEmailIgnoreCase("ocupado@test.com")).thenReturn(true);
+
+        assertThatThrownBy(() -> service.updateProfile(
+                        user.getId(), new UpdateProfileRequest("ocupado@test.com", "Profe")))
+                .isInstanceOf(ApiException.class)
+                .extracting(ex -> ((ApiException) ex).getStatus())
+                .isEqualTo(HttpStatus.CONFLICT);
+
+        assertThat(user.getEmail()).isEqualTo("profe@test.com");
+    }
+
+    @Test
+    void cambiarLaContraseñaGuardaElHashNuevoYCierraLasDemasSesiones() {
+        User user = usuarioExistente("profe@test.com", "contraseña123");
+        when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
+
+        AuthResponse response = service.changePassword(
+                user.getId(), new ChangePasswordRequest("contraseña123", "contraseña-nueva"));
+
+        assertThat(passwordEncoder.matches("contraseña-nueva", user.getPasswordHash())).isTrue();
+        assertThat(response.accessToken()).isNotBlank();
+        verify(refreshTokenRepository).revokeAllForUser(eq(user.getId()), any(Instant.class));
+    }
+
+    @Test
+    void cambiarLaContraseñaConLaActualMalNoLaToca() {
+        User user = usuarioExistente("profe@test.com", "contraseña123");
+        String hashOriginal = user.getPasswordHash();
+        when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
+
+        assertThatThrownBy(() -> service.changePassword(
+                        user.getId(), new ChangePasswordRequest("me-la-olvide", "contraseña-nueva")))
+                .isInstanceOf(ApiException.class)
+                .extracting(ex -> ((ApiException) ex).getStatus())
+                .isEqualTo(HttpStatus.BAD_REQUEST);
+
+        assertThat(user.getPasswordHash()).isEqualTo(hashOriginal);
+        verify(refreshTokenRepository, never()).revokeAllForUser(any(UUID.class), any(Instant.class));
+    }
 }
