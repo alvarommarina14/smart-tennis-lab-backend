@@ -8,6 +8,7 @@ import com.smarttennislab.match.dto.MatchSetResponse;
 import com.smarttennislab.match.dto.MatchSummaryResponse;
 import com.smarttennislab.match.dto.StartSetRequest;
 import com.smarttennislab.match.model.Match;
+import com.smarttennislab.match.model.MatchFormat;
 import com.smarttennislab.match.model.MatchSet;
 import com.smarttennislab.match.model.MatchStatus;
 import com.smarttennislab.match.repository.MatchEventRepository;
@@ -63,6 +64,7 @@ public class MatchService {
         match.setTournament(blankToNull(request.tournament()));
         match.setSurface(request.surface());
         match.setDiscipline(request.discipline() == null ? Discipline.SINGLES : request.discipline());
+        match.setFormat(request.format() == null ? MatchFormat.BEST_OF_3_SETS : request.format());
         match.setNotes(blankToNull(request.notes()));
 
         return detail(matchRepository.save(match), PlayerService.displayName(player));

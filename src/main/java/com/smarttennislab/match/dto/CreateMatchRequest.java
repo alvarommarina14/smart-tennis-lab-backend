@@ -1,6 +1,7 @@
 package com.smarttennislab.match.dto;
 
 import com.smarttennislab.catalog.model.Discipline;
+import com.smarttennislab.match.model.MatchFormat;
 import com.smarttennislab.match.model.Surface;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -16,5 +17,6 @@ public record CreateMatchRequest(
         @Size(max = 120) String tournament,
         Surface surface,
         Discipline discipline,
+        MatchFormat format,
         @NotNull(message = "Falta la hora de inicio") Instant startedAt,
         String notes) {}
