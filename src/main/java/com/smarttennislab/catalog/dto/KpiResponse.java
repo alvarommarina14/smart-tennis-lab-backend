@@ -1,8 +1,8 @@
 package com.smarttennislab.catalog.dto;
 
-import com.smarttennislab.catalog.Kpi;
-import com.smarttennislab.catalog.KpiKind;
-import com.smarttennislab.catalog.KpiUnit;
+import com.smarttennislab.catalog.model.Kpi;
+import com.smarttennislab.catalog.model.KpiKind;
+import com.smarttennislab.catalog.model.KpiUnit;
 
 public record KpiResponse(
         String code,

@@ -1,4 +1,4 @@
-package com.smarttennislab.catalog;
+package com.smarttennislab.catalog.model;
 
 public enum KpiKind {
 

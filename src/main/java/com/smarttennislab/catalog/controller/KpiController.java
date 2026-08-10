@@ -1,6 +1,8 @@
-package com.smarttennislab.catalog;
+package com.smarttennislab.catalog.controller;
 
 import com.smarttennislab.catalog.dto.KpiCatalogResponse;
+import com.smarttennislab.catalog.model.Discipline;
+import com.smarttennislab.catalog.service.KpiCatalogService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.GetMapping;

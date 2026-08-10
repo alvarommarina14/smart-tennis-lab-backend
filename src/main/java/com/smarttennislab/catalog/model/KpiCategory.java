@@ -1,4 +1,4 @@
-package com.smarttennislab.catalog;
+package com.smarttennislab.catalog.model;
 
 // El orden de las constantes es el orden en que la app dibuja las secciones.
 public enum KpiCategory {

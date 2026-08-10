@@ -1,10 +1,13 @@
-package com.smarttennislab.catalog;
+package com.smarttennislab.catalog.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.smarttennislab.catalog.dto.KpiCatalogResponse;
 import com.smarttennislab.catalog.dto.KpiCategoryResponse;
 import com.smarttennislab.catalog.dto.KpiResponse;
+import com.smarttennislab.catalog.model.Discipline;
+import com.smarttennislab.catalog.model.Kpi;
+import com.smarttennislab.catalog.model.KpiKind;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
