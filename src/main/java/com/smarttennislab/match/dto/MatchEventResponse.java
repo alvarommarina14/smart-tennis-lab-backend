@@ -10,6 +10,7 @@ public record MatchEventResponse(
         String kpiCode,
         Instant occurredAt,
         Instant recordedAt,
+        Long videoOffsetMs,
         long clientSeq,
         boolean deleted) {
 
@@ -20,6 +21,7 @@ public record MatchEventResponse(
                 event.getKpiCode(),
                 event.getOccurredAt(),
                 event.getRecordedAt(),
+                event.getVideoOffsetMs(),
                 event.getClientSeq(),
                 event.isDeleted());
     }

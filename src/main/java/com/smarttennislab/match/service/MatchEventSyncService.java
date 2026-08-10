@@ -83,6 +83,7 @@ public class MatchEventSyncService {
                     entrada.kpiCode(),
                     entrada.occurredAt(),
                     entrada.clientSeq());
+            nuevo.setVideoOffsetMs(entrada.videoOffsetMs());
             if (entrada.deleted()) {
                 nuevo.setDeletedAt(Instant.now());
             }
