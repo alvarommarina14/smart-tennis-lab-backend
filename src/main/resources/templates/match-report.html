@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <title>Reporte de partido</title>
+    <style>
+        @page { size: A4; margin: 18mm 14mm; }
+        body { font-family: sans-serif; font-size: 10pt; color: #14202a; }
+        h1 { font-size: 17pt; margin: 0 0 2mm 0; }
+        h2 { font-size: 12pt; margin: 7mm 0 2mm 0; border-bottom: 1px solid #c9d6e0; padding-bottom: 1mm; }
+        .meta { color: #556670; font-size: 9pt; margin-bottom: 4mm; }
+        .meta span { margin-right: 6mm; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { text-align: left; padding: 1.4mm 2mm; border-bottom: 1px solid #e3eaf0; }
+        th { background: #f0f5f8; font-size: 9pt; }
+        td.num, th.num { text-align: right; }
+        .derived { color: #2c6a9b; font-weight: bold; }
+        .footer { margin-top: 8mm; font-size: 8pt; color: #8a9aa6; }
+    </style>
+</head>
+<body>
+
+<h1 th:text="${report.playerName()}">Alumno</h1>
+
+<div class="meta">
+    <span th:if="${report.opponentName() != null}" th:text="'vs ' + ${report.opponentName()}"></span>
+    <span th:if="${report.tournament() != null}" th:text="${report.tournament()}"></span>
+    <span th:text="'Inicio: ' + ${inicio}"></span>
+    <span th:text="'Fin: ' + ${fin}"></span>
+    <span th:text="${report.durationMinutes()} + ' min'"></span>
+    <span th:text="${report.totalEvents()} + ' eventos'"></span>
+</div>
+
+<div th:each="seccion : ${secciones}">
+    <h2 th:text="${seccion.label()}">Categoría</h2>
+    <table>
+        <thead>
+        <tr>
+            <th>KPI</th>
+            <th class="num">Total</th>
+            <th class="num" th:each="set : ${report.sets()}" th:text="'Set ' + ${set.setNumber()}">Set</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="fila : ${seccion.rows()}">
+            <td th:text="${fila.kpiLabel()}" th:classappend="${fila.derived()} ? 'derived' : ''">KPI</td>
+            <td class="num" th:text="${fila.total()}">0</td>
+            <td class="num" th:each="valor : ${fila.porSet()}" th:text="${valor}">0</td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
+<div class="footer">Smart Tennis Lab</div>
+
+</body>
+</html>
