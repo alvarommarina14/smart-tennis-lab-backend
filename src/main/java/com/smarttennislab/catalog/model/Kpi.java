@@ -1,4 +1,4 @@
-package com.smarttennislab.catalog;
+package com.smarttennislab.catalog.model;
 
 import java.util.Arrays;
 import java.util.Collections;
