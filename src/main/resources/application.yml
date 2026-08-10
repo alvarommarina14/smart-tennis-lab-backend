@@ -37,7 +37,8 @@ stl:
     access-token-ttl: PT15M
     refresh-token-ttl: P30D
   cors:
-    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:8081,http://localhost:19006}
+    # 8081 y 19006 son los de Expo; 5173 es el renderer de la app desktop en desarrollo.
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:8081,http://localhost:19006,http://localhost:5173}
 
 springdoc:
   swagger-ui:
