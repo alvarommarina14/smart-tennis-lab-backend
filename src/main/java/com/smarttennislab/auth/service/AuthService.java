@@ -1,9 +1,11 @@
 package com.smarttennislab.auth.service;
 
 import com.smarttennislab.auth.dto.AuthResponse;
+import com.smarttennislab.auth.dto.ChangePasswordRequest;
 import com.smarttennislab.auth.dto.CoachResponse;
 import com.smarttennislab.auth.dto.LoginRequest;
 import com.smarttennislab.auth.dto.RegisterRequest;
+import com.smarttennislab.auth.dto.UpdateProfileRequest;
 import com.smarttennislab.auth.model.RefreshToken;
 import com.smarttennislab.auth.model.User;
 import com.smarttennislab.auth.repository.RefreshTokenRepository;
@@ -82,11 +84,46 @@ public class AuthService {
                 .ifPresent(RefreshToken::revoke);
     }
 
+    @Transactional
+    public CoachResponse updateProfile(UUID coachId, UpdateProfileRequest request) {
+        User user = require(coachId);
+        String email = normalize(request.email());
+
+        if (!email.equals(user.getEmail()) && userRepository.existsByEmailIgnoreCase(email)) {
+            throw ApiException.conflict("Ya hay una cuenta con ese email");
+        }
+
+        user.setEmail(email);
+        user.setFullName(request.fullName().trim());
+        return CoachResponse.from(user);
+    }
+
+    // Cambiar la contraseña cierra la sesión en todos los dispositivos y devuelve tokens nuevos
+    // para el que la cambió: si alguien te robó la cuenta, se queda afuera.
+    @Transactional
+    public AuthResponse changePassword(UUID coachId, ChangePasswordRequest request) {
+        User user = require(coachId);
+
+        if (!passwordEncoder.matches(request.currentPassword(), user.getPasswordHash())) {
+            throw ApiException.badRequest("La contraseña actual no coincide");
+        }
+
+        user.setPasswordHash(passwordEncoder.encode(request.newPassword()));
+        refreshTokenRepository.revokeAllForUser(coachId, Instant.now());
+        return issueTokens(user);
+    }
+
     @Transactional(readOnly = true)
     public CoachResponse currentCoach(UUID coachId) {
         return userRepository
                 .findById(coachId)
                 .map(CoachResponse::from)
+                .orElseThrow(() -> ApiException.unauthorized("La sesión ya no es válida"));
+    }
+
+    private User require(UUID coachId) {
+        return userRepository
+                .findById(coachId)
                 .orElseThrow(() -> ApiException.unauthorized("La sesión ya no es válida"));
     }
 
