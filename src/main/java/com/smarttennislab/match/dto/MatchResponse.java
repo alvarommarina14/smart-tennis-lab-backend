@@ -2,6 +2,7 @@ package com.smarttennislab.match.dto;
 
 import com.smarttennislab.catalog.model.Discipline;
 import com.smarttennislab.match.model.Match;
+import com.smarttennislab.match.model.MatchFormat;
 import com.smarttennislab.match.model.MatchStatus;
 import com.smarttennislab.match.model.Surface;
 import java.time.Instant;
@@ -16,6 +17,7 @@ public record MatchResponse(
         String tournament,
         Surface surface,
         Discipline discipline,
+        MatchFormat format,
         MatchStatus status,
         Instant startedAt,
         Instant finishedAt,
@@ -33,6 +35,7 @@ public record MatchResponse(
                 match.getTournament(),
                 match.getSurface(),
                 match.getDiscipline(),
+                match.getFormat(),
                 match.getStatus(),
                 match.getStartedAt(),
                 match.getFinishedAt(),

@@ -45,6 +45,10 @@ public class Match {
     private Discipline discipline = Discipline.SINGLES;
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "format", nullable = false)
+    private MatchFormat format = MatchFormat.BEST_OF_3_SETS;
+
+    @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
     private MatchStatus status = MatchStatus.IN_PROGRESS;
 
